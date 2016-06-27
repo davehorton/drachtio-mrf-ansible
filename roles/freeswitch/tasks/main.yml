@@ -1,0 +1,135 @@
+---
+
+- name: Update apt-cache
+  apt: update_cache=yes 
+
+- name:  get curl
+  apt: name=curl
+
+- name: install key for source code 
+  shell: curl http://files.freeswitch.org/repo/deb/debian/freeswitch_archive_g0.pub | apt-key add -
+
+- name: update sources 
+  shell: echo "deb http://files.freeswitch.org/repo/deb/freeswitch-1.6/ jessie main" > /etc/apt/sources.list.d/freeswitch.list
+
+- name: Update apt-cache
+  apt: update_cache=yes 
+
+- name: install freeswitch dependencies
+  apt: name={{ item }} state=latest
+  with_items:
+  - 'freeswitch-all'
+  - 'freeswitch-all-dbg'
+  - 'gdb'
+  - 'libyuv-dev'
+  - 'libvpx2-dev'
+  - 'unixodbc-dev'
+  - 'libmyodbc'
+  - 'mysql-common'
+  - 'mysql-client'
+  - 'xinetd'
+  - 'ntp'
+  - 'tcpdump'
+
+- name: install freeswitch video dependencies
+  apt: name=freeswitch-video-deps-most state=latest force=yes
+
+- name: git configure
+  shell: git config --global pull.rebase true
+
+- name: Install FreeSwitch source code
+  git: repo=https://freeswitch.org/stash/scm/fs/freeswitch.git
+       dest={{freeswitch_sources_path}}
+       version=v1.6
+       depth=50
+       accept_hostkey=yes
+       force=yes
+
+- name: bootstrap - take a coffee - it takes time --
+  shell: ./bootstrap.sh -j chdir={{freeswitch_sources_path}}
+
+- name: edit modules.conf
+  lineinfile:
+    dest: /usr/local/src/freeswitch/modules.conf
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items: 
+    - {regexp: "asr_tts/mod_flite", line: "asr_tts/mod_flite"}
+    - {regexp: "applications/mod_http_cache", line: "applications/mod_http_cache"}
+
+- name: patch spandsp (https://freeswitch.org/jira/browse/FS-8736)
+  copy: src=memmove.m4 dest=/usr/local/src/freeswitch/libs/spandsp/m4/memmove.m4
+
+- name: patch spandsp (part 2)
+  lineinfile:
+    dest: /usr/local/src/freeswitch/libs/spandsp/configure.ac
+    state: present
+    line: "m4_include(m4/memmove.m4)"
+    insertafter: "m4/ax_func_aligned_alloc.m4"
+
+- name: Freeswitch configuration
+  shell: ./{{freeswitch_configure_command}} chdir={{freeswitch_sources_path}}
+
+- name: FreeSwitch make - another coffee ! --
+  shell: make chdir={{freeswitch_sources_path}}
+
+- name: FreeSwitch install
+  shell: make install chdir={{freeswitch_sources_path}}
+
+- name: make sounds
+  shell: cd {{freeswitch_sources_path}} && make cd-sounds-install cd-moh-install 
+
+- name: Copy acl.conf file
+  template: src=acl.conf.xml.j2 dest={{freeswitch_path}}conf/autoload_configs/acl.conf.xml owner=root group=root mode=0644
+
+- name: Copy event_socket.conf file
+  template: src=event_socket.conf.xml.j2 dest={{freeswitch_path}}conf/autoload_configs/event_socket.conf.xml owner=root group=root mode=0644
+
+- name: Remove unused dialplans and profiles
+  file: name={{freeswitch_path}}conf/{{ item }} state=absent
+  with_items:
+  - sip_profiles/external.xml
+  - sip_profiles/internal.xml
+  - sip_profiles/external-ipv6.xml
+  - sip_profiles/internal-ipv6.xml
+  - dialplan/default.xml
+  - dialplan/default
+  - dialplan/features.xml
+  - dialplan/public.xml
+  - dialplan/public
+  - dialplan/skinny-patterns.xml
+  - dialplan/skinny-patterns
+
+- name: Copy dialplan
+  template: src=mrf_dialplan.xml.j2 dest={{freeswitch_path}}conf/dialplan/mrf.xml owner=root group=root mode=0644
+
+- name: Copy sip profile
+  template: src=mrf_sip_profile.xml.j2 dest={{freeswitch_path}}conf/sip_profiles/mrf.xml owner=root group=root mode=0644
+
+- name: Change ownership of FreeSwitch installation
+  file: path={{freeswitch_path}} owner={{freeswitch_owner}} group={{freeswitch_group}} mode="ug=rwX,o=" state=directory recurse=yes
+
+- name: Change ownership of FreeSwitch binary files
+  file: path={{freeswitch_path}}bin/ owner={{freeswitch_owner}} group={{freeswitch_group}} mode="u=rwx,g=rx" state=directory recurse=yes
+
+- name: unmask freeswitch service
+  shell: systemctl unmask freeswitch
+
+- name: install freeswitch.service
+  copy: src=freeswitch.service dest=/lib/systemd/system/freeswitch.service
+
+- name: reload systemctl
+  shell: systemctl daemon-reload
+
+- name: enable freeswitch service
+  service: name=freeswitch state=started
+
+- name: log files management
+  copy: src={{ freeswitch_log_rotate_script }} dest=/etc/cron.daily/freeswitch_log_rotation
+
+- shell: touch /var/log/freeswitch.log
+
+- file: path=/var/log/freeswitch.log owner={{freeswitch_owner}} group={{freeswitch_group}}
+
+- file: path=/etc/cron.daily/freeswitch_log_rotation mode="a+x"

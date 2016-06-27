@@ -1,0 +1,38 @@
+<drachtio>
+
+    <!-- udp port to listen on for client connections (default 8022), and shared secret used to authenticate clients -->
+    <admin port="{{drachtioAdminPort}}" secret="{{drachtioSecret}}">{{ hostvars[inventory_hostname]['ansible_' + drachtioAdminInterface]['ipv4']['address'] }}</admin>
+  
+    <!-- sip configuration -->
+    <sip>
+        <!-- local sip address to bind to.  Default: 'sip:*', which means listens on port 5060 on all interfaces and transports -->
+        <!--
+                Other examples:
+                    sip:192.168.1.100      
+                    sip:*;transport=tcp   
+                    sip:*:5061          
+        -->
+        <contact>sip:{{ hostvars[inventory_hostname]['ansible_' + drachtioSipInterface]['ipv4']['address'] }}</contact>
+    </sip>
+
+    <cdrs>true</cdrs>
+            
+    <!-- logging configuration -->
+    <logging>
+
+        <file>
+            <name>{{drachtioLogFileDirectory}}/{{drachtioLogFilePattern}}</name>
+            <archive>{{drachtioLogArchiveDirectory}}</archive>
+            <size>{{drachtioLogFileSize}}</size>
+             <maxSize>{{drachtioLogFileMaxSize}}</maxSize>
+            <auto-flush>true</auto-flush>
+        </file>
+
+        <!-- sofia internal log level, from 0 (minimal) to 9 (verbose) -->
+        <sofia-loglevel>3</sofia-loglevel>
+        
+        <!-- notice, warning, error, info, debug.  Default: info -->
+        <loglevel>info</loglevel>
+    </logging>
+        
+</drachtio>

@@ -1,0 +1,23 @@
+---
+- hosts: freeswitch
+  sudo: yes
+  vars_prompt:
+
+  - name: "freeswitchSipPort"
+    prompt: "Please specify the port that freeswitch will listen on for sip traffic"
+    default: "5060"  
+    private: no
+
+  - name: "freeswitchSecret"
+    prompt: "Please specify the secret to use to authenticate"
+    default: "ClueCon"  
+    private: no
+
+  - name: "freeswitchEventSocketAcl"
+    prompt: "Please specify in CIDR format the allowed address space for app servers (e.g. 10.128.10.0/24)"
+    default: "0.0.0.0/0"
+    private: no
+
+  roles:
+    - common
+    - freeswitch

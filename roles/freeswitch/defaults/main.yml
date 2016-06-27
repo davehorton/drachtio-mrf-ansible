@@ -1,0 +1,12 @@
+---
+
+freeswitch_version: v1.6 
+freeswitch_sources_path: /usr/local/src/freeswitch/ #Path to the FreeSwitch source directory
+freeswitch_path: /usr/local/freeswitch/ #Path to the FreeSwith directory
+freeswitch_owner: freeswitch
+freeswitch_group: daemon
+freeswitch_modules_template: ../templates/modules.conf #modules.conf file used for FreeSwitch compilation
+freeswitch_init_template: ../templates/freeswitch.init #init script template
+freeswitch_configure_command: configure # freeswicth configure command - you can add option
+freeswitch_log_rotate_script: ../templates/freeswitch_log_rotation # log management script
+freeswitch_log_conf_template: ../templates/logfile.conf.xml # freeswitch log configuration file template

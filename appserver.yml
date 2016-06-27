@@ -1,0 +1,8 @@
+---
+- hosts: appserver
+  sudo: yes
+  roles:
+    - common
+    - builder
+    - siptier
+    - nodejs

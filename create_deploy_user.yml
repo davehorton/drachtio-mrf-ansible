@@ -1,0 +1,13 @@
+---
+- hosts: all
+  serial: 1
+  sudo: yes
+  vars_prompt:
+
+  - name: "deploy_user"
+    prompt: "Please give a username to use for deployment tasks"
+    default: "deploy"  
+
+  roles:
+    - deployuser
+

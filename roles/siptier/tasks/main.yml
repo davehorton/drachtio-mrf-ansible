@@ -1,0 +1,48 @@
+---
+
+  - name: copy iptables rules
+    copy:  src=rules.v4 dest=/etc/iptables/rules.v4 mode=0644 owner=root group=root
+    notify: restart iptables
+
+ # - name: create /usr/local/src/drachtio-server directory
+ #   file: path=/usr/local/src/drachtio-server state=directory mode=0777
+ #   sudo: no
+
+  - name: check out drachtio-server (develop branch)
+    git: repo=git@github.com:davehorton/drachtio-server.git
+          dest=/usr/local/src/drachtio-server
+          version=develop
+          depth=50
+          accept_hostkey=yes
+          force=yes
+    sudo: no
+
+  - name: copy build script
+    copy:  src=build-drachtio-server-release.sh dest=/usr/local/src/build-drachtio-server.sh mode=0755
+
+  - name: build drachtio-server (this will take a while)
+    shell: /usr/local/src/build-drachtio-server.sh
+    args:
+      chdir: /usr/local/src/drachtio-server/
+      creates: /usr/local/src/drachtio-server/build/drachtio
+    notify: restart drachtio
+
+  - name: Create log directories
+    file: path={{drachtioLogFileDirectory}} state=directory
+    file: path={{drachtioLogArchiveDirectory}} state=directory
+
+  - name: Create drachtio config file
+    template:
+      src: drachtio.conf.xml.j2
+      dest: "/etc/drachtio.conf.xml"
+      mode: 0644
+      owner: root
+      group: root
+
+#  - name: Create drachtio upstart script
+#    copy: 
+#      src: drachtio-upstart-script
+#      dest: /etc/init/drachtio-server.conf
+#      mode: 0755
+#      owner: root
+#      group: root
