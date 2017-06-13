@@ -4,8 +4,13 @@
   vars_prompt:
 
   - name: "freeswitchSipPort"
-    prompt: "Please specify the port that freeswitch will listen on for sip traffic"
-    default: "5060"  
+    prompt: "Please specify the port that freeswitch will listen on for sip traffic used to create unencrypted connections"
+    default: "5080"  
+    private: no
+
+  - name: "freeswitchDtlsSipPort"
+    prompt: "Please specify the port that freeswitch will listen on for sip traffic used to create encrypted DTLS/SRTP connections"
+    default: "5081"  
     private: no
 
   - name: "freeswitchSecret"
@@ -14,8 +19,8 @@
     private: no
 
   - name: "freeswitchEventSocketAcl"
-    prompt: "Please specify in CIDR format the allowed address space for app servers (e.g. 10.128.10.0/24)"
-    default: "0.0.0.0/0"
+    prompt: "Please specify in CIDR format the allowed address space for app servers to connect to the freeswitch event socket (default: localhost)"
+    default: "127.0.0.1/32"
     private: no
 
   roles:

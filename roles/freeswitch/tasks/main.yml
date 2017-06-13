@@ -40,7 +40,7 @@
 - name: Install FreeSwitch source code
   git: repo=https://freeswitch.org/stash/scm/fs/freeswitch.git
        dest={{freeswitch_sources_path}}
-       version=v1.6
+       version={{freeswitch_version}}
        depth=50
        accept_hostkey=yes
        force=yes
@@ -104,8 +104,11 @@
 - name: Copy dialplan
   template: src=mrf_dialplan.xml.j2 dest={{freeswitch_path}}conf/dialplan/mrf.xml owner=root group=root mode=0644
 
-- name: Copy sip profile
+- name: Copy ipv4 sip profile
   template: src=mrf_sip_profile.xml.j2 dest={{freeswitch_path}}conf/sip_profiles/mrf.xml owner=root group=root mode=0644
+
+- name: Copy ipv6 sip profile
+  template: src=mrf_ipv6_sip_profile.xml.j2 dest={{freeswitch_path}}conf/sip_profiles/mrf_ipv6.xml owner=root group=root mode=0644
 
 - name: Change ownership of FreeSwitch installation
   file: path={{freeswitch_path}} owner={{freeswitch_owner}} group={{freeswitch_group}} mode="ug=rwX,o=" state=directory recurse=yes

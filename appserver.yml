@@ -1,8 +1,8 @@
 ---
-- hosts: appserver
+- hosts: all
   sudo: yes
   roles:
     - common
     - builder
-    - siptier
+#    - siptier
     - nodejs

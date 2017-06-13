@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <include>
-  <profile name="drachtio_mrf">
+  <profile name="drachtio_mrf_ipv6">
     <domains>
       <domain name="all" alias="true" parse="false"/>
     </domains>
@@ -12,8 +12,8 @@
       <param name="dtmf-type" value="rfc2833"/>
       
       <param name="inbound-late-negotiation" value="true"/>
-      <param name="rtp-ip" value="$${local_ip_v4}"/>
-      <param name="sip-ip" value="$${local_ip_v4}"/>
+      <param name="rtp-ip" value="$${local_ip_v6}"/>
+      <param name="sip-ip" value="$${local_ip_v6}"/>
       <param name="sip-port" value="{{freeswitchSipPort}}"/>
       <param name="ext-rtp-ip" value="auto-nat"/>
       <param name="ext-sip-ip" value="auto-nat"/>

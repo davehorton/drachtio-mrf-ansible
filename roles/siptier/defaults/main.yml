@@ -3,8 +3,9 @@ drachtioAdminPort: 9022
 drachtioSecret: cymru
 drachtioSipInterface: eth0
 drachtioAdminInterface: eth0
-drachtioLogFilePattern: /drachtio_%Y%m%d_%H%M%S-%N.log
-drachtioLogArchiveDirectory: /var/log/drachtio
+drachtioLogFilePattern: drachtio_%Y%m%d_%H%M%S-%N.log
+drachtioLogArchiveDirectory: /var/log/drachtio/archive
 drachtioLogFileSize: 50
 drachtioLogFileMaxSize: 10
 drachtioLogFileDirectory: /var/log/drachtio
+drachtioBranch: develop
